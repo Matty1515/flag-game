@@ -11,6 +11,22 @@ const feedback = computed(() => flagGameStore.isSelectedAnswerCorrect
     ? 'Correct!'
     : `Incorrect. The answer is ${flagGameStore.currentCountry?.name}.`);
 
+const progress = computed(() => {
+    if (flagGameStore.phase === 'completed') return 100;
+    if (flagGameStore.phase !== 'playing') return 0;
+
+    const answered = flagGameStore.currentQuestion - (flagGameStore.selectedAnswer === null ? 1 : 0);
+    return (answered / flagGameStore.totalQuestions) * 100;
+});
+
+const grade = computed(() => {
+    const score = flagGameStore.score;
+    if (score <= 4) return 'Worth another lap.';
+    if (score <= 6) return 'Solid ground, a few gaps.';
+    if (score <= 8) return 'Strong — you know the atlas.';
+    return 'Near-perfect recall.';
+});
+
 let feedbackTimer;
 
 function scheduleNextQuestion() {
@@ -26,7 +42,7 @@ function optionClass(code) {
     if (flagGameStore.selectedAnswer === null) return '';
     if (code === flagGameStore.currentQuestionData.answerCode) return 'correct';
     if (code === flagGameStore.selectedAnswer) return 'incorrect';
-    return '';
+    return 'muted';
 }
 
 onBeforeMount(() => {
@@ -41,60 +57,100 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
 
 <template>
     <main class="flag-game">
-        <section class="game-card">
-            <h1>Flag Guessing Game</h1>
+        <div class="shell">
+            <header class="masthead">
+                <div class="titles">
+                    <p class="kicker">Geography drill</p>
+                    <h1>Flag Guessing Game</h1>
+                </div>
+
+                <div v-if="flagGameStore.phase === 'playing'" class="readout">
+                    <div class="stat">
+                        <span class="stat-label">Question</span>
+                        <span class="stat-value">{{ flagGameStore.currentQuestion }} / {{ flagGameStore.totalQuestions }}</span>
+                    </div>
+                    <span class="stat-divider" aria-hidden="true" />
+                    <div class="stat">
+                        <span class="stat-label">Score</span>
+                        <span class="stat-value accent">{{ flagGameStore.score }}</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="track" aria-hidden="true">
+                <div class="track-fill" :style="{ width: `${progress}%` }" />
+            </div>
 
             <template v-if="flagGameStore.phase === 'selection'">
-                <p>Choose a difficulty to start a 10-question game.</p>
-                <div class="difficulty-options">
-                    <button
-                        v-for="difficulty in difficulties"
-                        :key="difficulty.value"
-                        type="button"
-                        @click="flagGameStore.startGame(difficulty.value)"
-                    >
-                        {{ difficulty.label }}
-                    </button>
-                </div>
+                <section class="start">
+                    <h2>Choose a difficulty to start a {{ flagGameStore.totalQuestions }}-question game.</h2>
+                    <div class="difficulty-options">
+                        <button
+                            v-for="difficulty in difficulties"
+                            :key="difficulty.value"
+                            type="button"
+                            class="choice"
+                            @click="flagGameStore.startGame(difficulty.value)"
+                        >
+                            {{ difficulty.label }}
+                        </button>
+                    </div>
+                </section>
             </template>
 
             <template v-else-if="flagGameStore.phase === 'playing' && flagGameStore.currentCountry">
-                <div class="game-progress">
-                    <p>Question {{ flagGameStore.currentQuestion }} of {{ flagGameStore.totalQuestions }}</p>
-                    <p>Score: {{ flagGameStore.score }}</p>
-                </div>
+                <section class="round">
+                    <figure class="flag-panel">
+                        <figcaption>Identify</figcaption>
+                        <img
+                            class="flag-image"
+                            :src="flagGameStore.getFlagImage(flagGameStore.currentCountry.code)"
+                            alt="Flag to identify"
+                        >
+                    </figure>
 
-                <img
-                    class="flag-image"
-                    :src="flagGameStore.getFlagImage(flagGameStore.currentCountry.code)"
-                    alt="Flag to identify"
-                >
+                    <div class="quiz">
+                        <h2>Which country or territory does this flag belong to?</h2>
 
-                <h2>Which country or territory does this flag belong to?</h2>
-                <div class="answer-options">
-                    <button
-                        v-for="country in flagGameStore.currentOptions"
-                        :key="country.code"
-                        type="button"
-                        :class="optionClass(country.code)"
-                        :disabled="flagGameStore.selectedAnswer !== null"
-                        @click="selectAnswer(country.code)"
-                    >
-                        {{ country.name }}
-                    </button>
-                </div>
+                        <div class="answer-options">
+                            <button
+                                v-for="country in flagGameStore.currentOptions"
+                                :key="country.code"
+                                type="button"
+                                class="choice"
+                                :class="optionClass(country.code)"
+                                :disabled="flagGameStore.selectedAnswer !== null"
+                                @click="selectAnswer(country.code)"
+                            >
+                                <span>{{ country.name }}</span>
+                                <span
+                                    v-if="optionClass(country.code) === 'correct'"
+                                    class="choice-mark"
+                                >Correct</span>
+                                <span
+                                    v-else-if="optionClass(country.code) === 'incorrect'"
+                                    class="choice-mark"
+                                >Your pick</span>
+                            </button>
+                        </div>
 
-                <p v-if="flagGameStore.selectedAnswer !== null" class="feedback" aria-live="polite">
-                    {{ feedback }}
-                </p>
+                        <p class="sr-only" aria-live="polite">{{ flagGameStore.selectedAnswer === null ? '' : feedback }}</p>
+                    </div>
+                </section>
             </template>
 
             <template v-else>
-                <h2>Game complete!</h2>
-                <p class="final-score">You scored {{ flagGameStore.score }} out of {{ flagGameStore.totalQuestions }}.</p>
-                <button type="button" @click="flagGameStore.resetGame()">Play again</button>
+                <section class="complete">
+                    <p class="kicker">Round complete</p>
+                    <p class="final-score">
+                        <span class="final-score-value">{{ flagGameStore.score }}</span>
+                        <span class="final-score-of">of {{ flagGameStore.totalQuestions }}</span>
+                    </p>
+                    <p class="grade">{{ grade }}</p>
+                    <button type="button" class="btn btn-primary" @click="flagGameStore.resetGame()">Play again</button>
+                </section>
             </template>
-        </section>
+        </div>
     </main>
 </template>
 
@@ -105,115 +161,322 @@ body {
 </style>
 
 <style scoped>
+/* Feedback colours — the one place this screen steps outside the mono accent,
+   because right/wrong has to read instantly. */
 .flag-game {
+    --answer-correct: #3fb27f;
+    --answer-wrong: #d9534f;
+
     min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 24px;
     box-sizing: border-box;
-    background: #f4f6f8;
-    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 56px 32px 72px;
+    background: radial-gradient(1200px 600px at 12% -10%, #1d2036 0%, var(--color-bg) 60%);
+    color: var(--color-text);
+    font-family: var(--font-body);
 }
 
-.game-card {
-    width: min(100%, 720px);
-    padding: clamp(24px, 5vw, 48px);
-    box-sizing: border-box;
-    border-radius: 12px;
-    background: #fff;
-    text-align: center;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+.shell {
+    width: 100%;
+    max-width: 1080px;
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+}
+
+.masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-8);
+    flex-wrap: wrap;
+}
+
+.titles {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.kicker {
+    margin: 0;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent);
 }
 
 h1 {
-    margin-top: 0;
+    margin: 0;
+    font-size: 38px;
+    letter-spacing: -0.02em;
 }
 
-.game-progress {
+.readout {
     display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    font-weight: 700;
+    align-items: center;
+    gap: var(--space-8);
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-text) 45%, transparent);
+}
+
+.stat-value {
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-value.accent {
+    color: var(--color-accent-300);
+}
+
+.stat-divider {
+    width: 1px;
+    height: 34px;
+    background: var(--color-divider);
+}
+
+.track {
+    height: 2px;
+    border-radius: 2px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+
+.track-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-accent-700), var(--color-accent));
+    box-shadow: 0 0 18px var(--color-accent-600);
+    transition: width 0.45s ease;
+}
+
+.round {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 48px;
+    align-items: center;
+}
+
+.flag-panel {
+    position: relative;
+    margin: 0;
+    padding: 34px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(160deg, #21243a 0%, var(--color-surface) 100%);
+    box-shadow: var(--shadow-md);
+}
+
+.flag-panel figcaption {
+    position: absolute;
+    top: 22px;
+    left: 22px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-text) 38%, transparent);
 }
 
 .flag-image {
     display: block;
-    width: min(100%, 420px);
-    height: 240px;
-    margin: 24px auto;
+    width: 100%;
+    height: 260px;
+    margin-top: 22px;
     object-fit: contain;
+    border-radius: var(--radius-sm);
+    filter: drop-shadow(0 18px 44px rgba(0, 0, 0, 0.6));
+}
+
+.quiz {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+h2 {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    max-width: 22ch;
+    text-wrap: pretty;
 }
 
 .difficulty-options,
 .answer-options {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 24px;
+    gap: var(--space-4);
 }
 
 .difficulty-options {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-button {
-    min-height: 48px;
-    padding: 12px 18px;
-    border: 2px solid #2463a9;
-    border-radius: 8px;
-    background: #2463a9;
-    color: #fff;
-    font: inherit;
-    font-weight: 700;
+.start {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    max-width: 520px;
+}
+
+.choice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: 56px;
+    padding: var(--space-6) 18px;
+    text-align: left;
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: 15px;
+    color: var(--color-text);
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+    border-radius: var(--radius-md);
     cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
-button:hover:not(:disabled),
-button:focus-visible {
-    background: #194a82;
-    border-color: #194a82;
+.choice:hover:not(:disabled) {
+    background: var(--color-accent-900);
+    border-color: var(--color-accent);
 }
 
-button:focus-visible {
-    outline: 3px solid #8bc4ff;
+.choice:active:not(:disabled) {
+    background: color-mix(in srgb, var(--color-accent) 24%, transparent);
+    border-color: var(--color-accent-400);
+}
+
+.choice:focus-visible {
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
 }
 
-button:disabled {
+.choice:disabled {
     cursor: default;
-    opacity: 0.65;
+    border-color: color-mix(in srgb, var(--color-text) 8%, transparent);
+    color: color-mix(in srgb, var(--color-text) 34%, transparent);
 }
 
-button.correct {
-    background: #237a3b;
-    border-color: #237a3b;
-    opacity: 1;
+.choice-mark {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
-button.incorrect {
-    background: #b42318;
-    border-color: #b42318;
-    opacity: 1;
+.choice.correct:disabled {
+    border-color: var(--answer-correct);
+    background: color-mix(in srgb, var(--answer-correct) 20%, transparent);
+    color: color-mix(in srgb, var(--answer-correct) 45%, var(--color-text));
+    box-shadow: 0 0 24px color-mix(in srgb, var(--answer-correct) 24%, transparent);
 }
 
-.feedback,
+.choice.correct .choice-mark {
+    color: var(--answer-correct);
+}
+
+.choice.incorrect:disabled {
+    border-color: var(--answer-wrong);
+    background: color-mix(in srgb, var(--answer-wrong) 18%, transparent);
+    color: color-mix(in srgb, var(--answer-wrong) 40%, var(--color-text));
+}
+
+.choice.incorrect .choice-mark {
+    color: var(--answer-wrong);
+}
+
+.complete {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-6);
+    padding-top: var(--space-4);
+}
+
 .final-score {
-    margin: 24px 0 0;
-    font-size: 1.2rem;
-    font-weight: 700;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+    margin: 0;
 }
 
-.final-score {
-    margin-bottom: 24px;
+.final-score-value {
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: 86px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+
+.final-score-of {
+    font-size: 20px;
+    color: color-mix(in srgb, var(--color-text) 50%, transparent);
+}
+
+.grade {
+    margin: 0;
+    max-width: 34ch;
+    font-size: 15px;
+    color: color-mix(in srgb, var(--color-text) 68%, transparent);
+    text-wrap: pretty;
+}
+
+.complete .btn {
+    margin-top: var(--space-2);
+    padding: 10px 20px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 900px) {
+    .round {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
 }
 
 @media (max-width: 560px) {
     .flag-game {
-        padding: 12px;
+        padding: 32px 16px 48px;
     }
 
-    .difficulty-options,
-    .answer-options {
+    h1 {
+        font-size: 30px;
+    }
+
+    h2 {
+        font-size: 21px;
+    }
+
+    .answer-options,
+    .difficulty-options {
         grid-template-columns: 1fr;
     }
 

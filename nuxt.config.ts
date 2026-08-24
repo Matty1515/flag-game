@@ -8,6 +8,8 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt'],
 
+  css: ['~/assets/nocturne.css'],
+
   app: {
     head: {
       title: 'Flag Guessing Game',
