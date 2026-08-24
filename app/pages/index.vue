@@ -38,6 +38,11 @@ function selectAnswer(code) {
     if (flagGameStore.submitAnswer(code)) scheduleNextQuestion();
 }
 
+function restartGame() {
+    clearTimeout(feedbackTimer);
+    flagGameStore.resetGame();
+}
+
 function optionClass(code) {
     if (flagGameStore.selectedAnswer === null) return '';
     if (code === flagGameStore.currentQuestionData.answerCode) return 'correct';
@@ -64,16 +69,19 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
                     <h1>Flag Guessing Game</h1>
                 </div>
 
-                <div v-if="flagGameStore.phase === 'playing'" class="readout">
-                    <div class="stat">
-                        <span class="stat-label">Question</span>
-                        <span class="stat-value">{{ flagGameStore.currentQuestion }} / {{ flagGameStore.totalQuestions }}</span>
+                <div v-if="flagGameStore.phase === 'playing'" class="game-status">
+                    <div class="readout">
+                        <div class="stat">
+                            <span class="stat-label">Question</span>
+                            <span class="stat-value">{{ flagGameStore.currentQuestion }} / {{ flagGameStore.totalQuestions }}</span>
+                        </div>
+                        <span class="stat-divider" aria-hidden="true" />
+                        <div class="stat">
+                            <span class="stat-label">Score</span>
+                            <span class="stat-value accent">{{ flagGameStore.score }}</span>
+                        </div>
                     </div>
-                    <span class="stat-divider" aria-hidden="true" />
-                    <div class="stat">
-                        <span class="stat-label">Score</span>
-                        <span class="stat-value accent">{{ flagGameStore.score }}</span>
-                    </div>
+                    <button type="button" class="btn btn-secondary restart-button" @click="restartGame">Restart</button>
                 </div>
             </header>
 
@@ -217,6 +225,19 @@ h1 {
     display: flex;
     align-items: center;
     gap: var(--space-8);
+}
+
+.game-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    flex-wrap: wrap;
+}
+
+.restart-button {
+    min-height: 36px;
+    padding-inline: 14px;
+    white-space: nowrap;
 }
 
 .stat {
