@@ -45,6 +45,12 @@ function restartGame() {
     flagGameStore.resetGame();
 }
 
+function exitToHome() {
+    clearTimeout(feedbackTimer);
+    flagGameStore.resetGame();
+    navigateTo('/');
+}
+
 function optionClass(code) {
     if (flagGameStore.selectedAnswer === null) return '';
     if (code === flagGameStore.currentQuestionData.answerCode) return 'correct';
@@ -71,8 +77,8 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
                     <h1>Flag Guessing Game</h1>
                 </div>
 
-                <div v-if="flagGameStore.phase === 'playing'" class="game-status">
-                    <div class="readout">
+                <div class="game-status">
+                    <div v-if="flagGameStore.phase === 'playing'" class="readout">
                         <div class="stat">
                             <span class="stat-label">Question</span>
                             <span class="stat-value">{{ flagGameStore.currentQuestion }} / {{ flagGameStore.totalQuestions }}</span>
@@ -83,7 +89,15 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
                             <span class="stat-value accent">{{ flagGameStore.score }}</span>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-secondary restart-button" @click="restartGame">Restart</button>
+                    <div class="game-actions">
+                        <button
+                            v-if="flagGameStore.phase === 'playing'"
+                            type="button"
+                            class="btn btn-secondary action-button"
+                            @click="restartGame"
+                        >Restart</button>
+                        <button type="button" class="btn btn-secondary action-button" @click="exitToHome">Exit</button>
+                    </div>
                 </div>
             </header>
 
@@ -236,7 +250,12 @@ h1 {
     flex-wrap: wrap;
 }
 
-.restart-button {
+.game-actions {
+    display: flex;
+    gap: var(--space-3);
+}
+
+.action-button {
     min-height: 36px;
     padding-inline: 14px;
     white-space: nowrap;
