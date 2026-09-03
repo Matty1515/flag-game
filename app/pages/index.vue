@@ -1,12 +1,10 @@
 <script setup>
 import { NuxtLink } from '#components';
 
-// Static display copy — the store has no streak concept yet.
-// TODO: wire to real data once per-player history is tracked.
-const streak = '4 days';
-
+// Pool size is the entry count in app/data/countries.js (countries + territories +
+// UK home nations). Hardcoded on purpose — recount if that file changes.
 const stats = [
-    { value: '195', label: 'Countries in the pool' },
+    { value: '252', label: 'Countries & territories' },
     { value: '4', label: 'Game modes' },
     { value: '~2 min', label: 'Per round' },
 ];
@@ -82,10 +80,6 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
                     <span class="brand-name">Flag Game</span>
                 </div>
                 <div class="topbar-right">
-                    <div class="streak">
-                        <span class="streak-label">Streak</span>
-                        <span class="streak-value">{{ streak }}</span>
-                    </div>
                     <span class="tag tag-outline beta-tag">Beta</span>
                 </div>
             </header>
@@ -98,7 +92,7 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
                     </div>
                     <h1 class="hero-title">Know every flag on the map.</h1>
                     <p class="hero-lead">
-                        Short drills built from all 195 countries and a hundred-odd territories.
+                        Short drills built from all 252 countries and territories on the map.
                         Pick a mode, take ten questions, watch the gaps close.
                     </p>
                     <div class="hero-cta">
@@ -306,27 +300,6 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
     gap: 20px;
 }
 
-.streak {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    text-align: right;
-}
-
-.streak-label {
-    font-size: 9px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--color-text) 42%, transparent);
-}
-
-.streak-value {
-    font-family: var(--font-heading);
-    font-size: 15px;
-    font-variant-numeric: tabular-nums;
-    color: var(--color-accent-300);
-}
-
 .beta-tag {
     font-size: 10px;
 }
@@ -414,7 +387,7 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
 
 .stat-row {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 18px;
 }
