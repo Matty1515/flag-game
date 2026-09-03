@@ -12,7 +12,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Flag Guessing Game',
+      title: 'Flag Game',
       link: [
         {
           rel: 'icon',
