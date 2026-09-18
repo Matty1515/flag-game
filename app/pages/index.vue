@@ -82,9 +82,6 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
                     >
                     <span class="brand-name">Flag Game</span>
                 </div>
-                <div class="topbar-right">
-                    <span class="tag tag-outline beta-tag">Beta</span>
-                </div>
             </header>
 
             <section class="hero">
@@ -273,16 +270,6 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
     font-weight: var(--font-heading-weight);
     font-size: 15px;
     letter-spacing: -0.01em;
-}
-
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.beta-tag {
-    font-size: 10px;
 }
 
 /* — hero — */
