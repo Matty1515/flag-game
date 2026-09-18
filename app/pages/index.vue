@@ -18,7 +18,7 @@ const modes = [
         length: '10 questions',
         level: 'All levels',
         art: 'bars',
-        is: NuxtLink,
+        available: true,
         link: { to: '/games/flags' },
     },
     {
@@ -29,8 +29,7 @@ const modes = [
         length: '10 questions',
         level: 'Hard',
         art: 'zoom',
-        is: 'a',
-        link: { href: '#' },
+        available: false,
     },
     {
         n: '03',
@@ -40,8 +39,7 @@ const modes = [
         length: '10 questions',
         level: 'Medium',
         art: 'outline',
-        is: 'a',
-        link: { href: '#' },
+        available: false,
     },
     {
         n: '04',
@@ -51,8 +49,7 @@ const modes = [
         length: '10 questions',
         level: 'Medium',
         art: 'capital',
-        is: 'a',
-        link: { href: '#' },
+        available: false,
     },
 ];
 
@@ -135,11 +132,12 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
 
                 <div class="modes-grid">
                     <component
-                        :is="mode.is"
+                        :is="mode.available ? NuxtLink : 'article'"
                         v-for="mode in modes"
                         :key="mode.n"
-                        v-bind="mode.link"
+                        v-bind="mode.available ? mode.link : {}"
                         class="mode-card"
+                        :class="{ 'mode-card-unavailable': !mode.available }"
                     >
                         <div class="mode-card-top">
                             <span class="mode-kicker">{{ mode.kicker }}</span>
@@ -183,7 +181,9 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
                                 <span class="tag tag-neutral mode-tag">{{ mode.length }}</span>
                                 <span class="tag tag-neutral mode-tag">{{ mode.level }}</span>
                             </div>
-                            <span class="mode-play">Play →</span>
+                            <span class="mode-play">
+                                {{ mode.available ? 'Play →' : 'Coming soon' }}
+                            </span>
                         </div>
                     </component>
                 </div>
@@ -265,8 +265,8 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
 }
 
 .brand-logo {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
     filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-accent) 32%, transparent));
 }
@@ -466,15 +466,51 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
     transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
 }
 
-.mode-card:hover {
+.mode-card:not(.mode-card-unavailable):hover {
     transform: translateY(-3px);
     border-color: var(--color-accent);
     box-shadow: var(--shadow-md), 0 0 32px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
 
-.mode-card:focus-visible {
+.mode-card:not(.mode-card-unavailable):focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
+}
+
+.mode-card-unavailable {
+    cursor: default;
+    color: color-mix(in srgb, var(--color-text) 44%, transparent);
+    border-color: color-mix(in srgb, var(--color-text) 10%, transparent);
+    background: linear-gradient(165deg, #191b29 0%, #151620 100%);
+    box-shadow: none;
+}
+
+.mode-card-unavailable .mode-kicker,
+.mode-card-unavailable .mode-title,
+.mode-card-unavailable .mode-blurb,
+.mode-card-unavailable .mode-num,
+.mode-card-unavailable .mode-play {
+    color: color-mix(in srgb, var(--color-text) 34%, transparent);
+}
+
+.mode-card-unavailable .mode-art {
+    opacity: 0.42;
+    filter: grayscale(1);
+    background: color-mix(in srgb, var(--color-text) 3%, transparent);
+}
+
+.mode-card-unavailable .mode-foot {
+    border-top-color: color-mix(in srgb, var(--color-text) 9%, transparent);
+}
+
+.mode-card-unavailable .mode-tag {
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.mode-card-unavailable .mode-play {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .mode-card-top {
