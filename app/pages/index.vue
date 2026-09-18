@@ -76,7 +76,13 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
         <div class="home-inner">
             <header class="topbar">
                 <div class="brand">
-                    <span class="brand-mark" aria-hidden="true" />
+                    <img
+                        class="brand-logo"
+                        src="/flag-game-logo.png"
+                        alt=""
+                        width="1129"
+                        height="1114"
+                    >
                     <span class="brand-name">Flag Game</span>
                 </div>
                 <div class="topbar-right">
@@ -258,33 +264,11 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
     gap: 12px;
 }
 
-.brand-mark {
-    position: relative;
-    width: 26px;
-    height: 26px;
-    border: 1px solid var(--color-accent);
-    border-radius: var(--radius-sm);
-    box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 30%, transparent);
-}
-
-.brand-mark::before,
-.brand-mark::after {
-    content: '';
-    position: absolute;
-    left: 6px;
-    top: 5px;
-}
-
-.brand-mark::before {
-    width: 2px;
-    height: 15px;
-    background: var(--color-accent);
-}
-
-.brand-mark::after {
-    width: 11px;
-    height: 7px;
-    background: color-mix(in srgb, var(--color-accent) 55%, transparent);
+.brand-logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-accent) 32%, transparent));
 }
 
 .brand-name {
