@@ -191,10 +191,6 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
 
             <footer class="home-foot">
                 <span>Flag artwork from open data · scores stay on this device</span>
-                <div class="home-foot-links">
-                    <a href="#">How scoring works</a>
-                    <a href="#">Suggest a mode</a>
-                </div>
             </footer>
         </div>
     </main>
@@ -242,8 +238,9 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
     position: relative;
     width: 100%;
     max-width: 1180px;
+    min-height: 100vh;
     margin: 0 auto;
-    padding: 64px 32px 88px;
+    padding: 64px 32px 28px;
     display: flex;
     flex-direction: column;
     gap: 56px;
@@ -705,28 +702,16 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
 
 /* — footer — */
 .home-foot {
+    margin-top: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
     flex-wrap: wrap;
-    padding-top: 8px;
+    padding-top: 20px;
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
     font-size: 12px;
     color: color-mix(in srgb, var(--color-text) 38%, transparent);
-}
-
-.home-foot-links {
-    display: flex;
-    gap: 18px;
-}
-
-.home-foot-links a {
-    color: var(--color-accent-300);
-    text-decoration: none;
-}
-
-.home-foot-links a:hover {
-    color: var(--color-accent-200);
 }
 
 @keyframes noct-drift {
@@ -755,7 +740,7 @@ const flagSrc = code => `https://flagcdn.com/w320/${code}.png`;
 
 @media (max-width: 560px) {
     .home-inner {
-        padding: 40px 20px 64px;
+        padding: 40px 20px 24px;
         gap: 40px;
     }
 }
